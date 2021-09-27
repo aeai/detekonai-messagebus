@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31613.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Detekonai.Core.MessageBus", "Detekonai.Core.MessageBus\Detekonai.Core.MessageBus.csproj", "{FC621EA1-FD0D-4426-B90C-2E738203B057}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Detekonai.Core.MessageBus.Tests", "Detekonai.Core.MessageBus.Tests\Detekonai.Core.MessageBus.Tests.csproj", "{C469C5B4-0794-4B88-BA08-D117E3E5EF30}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC621EA1-FD0D-4426-B90C-2E738203B057}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC621EA1-FD0D-4426-B90C-2E738203B057}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC621EA1-FD0D-4426-B90C-2E738203B057}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC621EA1-FD0D-4426-B90C-2E738203B057}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C469C5B4-0794-4B88-BA08-D117E3E5EF30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C469C5B4-0794-4B88-BA08-D117E3E5EF30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C469C5B4-0794-4B88-BA08-D117E3E5EF30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C469C5B4-0794-4B88-BA08-D117E3E5EF30}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A24C7C3A-D080-4BEA-A748-7A2CFB268EB6}
+	EndGlobalSection
+EndGlobal

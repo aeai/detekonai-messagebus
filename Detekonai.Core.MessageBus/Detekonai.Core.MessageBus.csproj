@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.1</Version>
+    <Authors>Aeai</Authors>
+    <Company>Detekonai</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2021 Erik Takakura-Zajac</Copyright>
+    <PackageProjectUrl>https://github.com/aeai/detekonai-messagebus</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aeai/detekonai-messagebus.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>
