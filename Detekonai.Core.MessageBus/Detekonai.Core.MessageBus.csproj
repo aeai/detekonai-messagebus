@@ -11,6 +11,7 @@
     <PackageProjectUrl>https://github.com/aeai/detekonai-messagebus</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aeai/detekonai-messagebus.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Configurations>Debug;Release;MasterDebug</Configurations>
   </PropertyGroup>
 
 </Project>
