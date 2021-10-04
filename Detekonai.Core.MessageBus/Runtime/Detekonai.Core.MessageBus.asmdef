@@ -2,7 +2,7 @@
     "name": "Detekonai.Core.MessageBus",
     "rootNamespace": "",
     "references": [
-        "GUID:2faec8fb0be03604293ae09d14b4b779"
+        "GUID:560b04d1a97f54a4e82edc0cbbb69285"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
