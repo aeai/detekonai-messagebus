@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 #if USE_REACTIVE
 using UniRx;
 #endif
@@ -290,7 +292,93 @@ namespace Detekonai.Core.Tests
 			Assert.That(() => bus.Trigger(new TestEvent()), Throws.Nothing);
 		}
 
+		[Test]
+		public async Task CanGetMessages()
+		{
+			var bus = new MessageBus();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Task.Run(async () =>
+				{
+					await Task.Delay(1000);
+					bus.Trigger(new TestEvent(){ Alma = 12});
+				}
+			);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
+			TestEvent ret = await bus.GetMessageAsync<TestEvent>();
+
+            Assert.That(ret, Is.Not.Null);
+			Assert.That(ret.Alma, Is.EqualTo(12));
+		}
+
+		[Test]
+		public async Task CanGetMultipleMessages()
+		{
+			var bus = new MessageBus();
+			TestEvent anotherEvent = null;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+			Task.Run(async () =>
+			{
+				await Task.Delay(500);
+				anotherEvent = await bus.GetMessageAsync<TestEvent>();
+			}
+);
+			Task.Run(async () =>
+			{
+				await Task.Delay(1000);
+				bus.Trigger(new TestEvent() { Alma = 12 });
+			}
+			);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+			TestEvent ret = await bus.GetMessageAsync<TestEvent>();
+			Assert.That(ret, Is.Not.Null);
+			Assert.That(ret.Alma, Is.EqualTo(12));
+			Assert.That(anotherEvent, Is.Not.Null);
+			Assert.That(anotherEvent.Alma, Is.EqualTo(12));
+		}
+
+		[Test]
+		public async Task GetMessageCanTimeout()
+		{
+			var bus = new MessageBus();
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Task.Run(async () =>
+			{
+				await Task.Delay(1000);
+				bus.Trigger(new TestEvent() { Alma = 12 });
+			}
+			);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+
+            var source = new CancellationTokenSource();
+			source.CancelAfter(50);
+		
+
+			Assert.ThrowsAsync<TaskCanceledException>( async () => { await bus.GetMessageAsync<TestEvent>(source.Token); });
+		}
+
+		[Test]
+		public async Task FinishedGetMessageDontTimeout()
+		{
+			var bus = new MessageBus();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+			Task.Run(async () =>
+			{
+				await Task.Delay(1000);
+				bus.Trigger(new TestEvent() { Alma = 12 });
+			}
+			);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+			var source = new CancellationTokenSource();
+			source.CancelAfter(2000);
+			TestEvent ret = await bus.GetMessageAsync<TestEvent>(source.Token);
+			await Task.Delay(3000);
+			Assert.That(ret, Is.Not.Null);
+			Assert.That(ret.Alma, Is.EqualTo(12));
+		}
 
 
 		[Test]

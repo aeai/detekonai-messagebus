@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Detekonai.Core
 {
@@ -6,6 +9,7 @@ namespace Detekonai.Core
     {
 
         private readonly Delegate[] delegates;
+        private readonly Dictionary<int, object> messagesUnderWait = new Dictionary<int, object>();
 
         public MessageBus()
         {
@@ -13,9 +17,46 @@ namespace Detekonai.Core
 #if USE_REACTIVE
             source = new IObservable<object>[BaseMessage.Keys.Count];
 #endif
-		}
+        }
 
-		/// <summary> if you not unsubscribe you will leak memory!!!</summary>
+        public async Task<T> GetMessageAsync<T>(CancellationToken token) where T : BaseMessage
+        {
+            if (BaseMessage.Keys.TryGetValue(typeof(T), out int key))
+            {
+                TaskCompletionSource<T> tcs = null;
+                if(messagesUnderWait.TryGetValue(key, out object ob))
+                {
+                    tcs = (TaskCompletionSource<T>)ob;
+                }
+                else
+                {
+                    tcs = new TaskCompletionSource<T>();
+                    messagesUnderWait[key] = tcs;
+                }
+
+                if(token != CancellationToken.None)
+                {
+                    token.Register(() => 
+                        {
+                            tcs.TrySetCanceled();
+                            messagesUnderWait.Remove(key);
+                        }
+                    , true);
+                }
+                return await tcs.Task.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown event type {typeof(T)}");
+            }
+        }
+
+        public async Task<T> GetMessageAsync<T>() where T : BaseMessage
+        {
+            return await GetMessageAsync<T>(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        /// <summary> if you not unsubscribe you will leak memory!!!</summary>
         public void Subscribe<T>(Action<T> handler)
 			where T : BaseMessage
         {
@@ -73,6 +114,11 @@ namespace Detekonai.Core
         {
             var originalHandler = delegates[evt.Id] as Action<T>;
             originalHandler?.Invoke(evt);
+            if (messagesUnderWait.TryGetValue(evt.Id, out object val))
+            {
+                ((TaskCompletionSource<T>)val).TrySetResult(evt);
+                messagesUnderWait.Remove(evt.Id);
+            }
         }
 
         public void Unsubscribe<T>(Action<T> handler)
