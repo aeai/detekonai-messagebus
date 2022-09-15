@@ -10,6 +10,18 @@ namespace Detekonai.Core.Tests
 {
 	public class MessageBusTest
 	{
+		public class RootMessage: BaseMessage
+        {
+			public int RootInt { get; set; } = 15;
+        }
+		public class Child1Message : RootMessage
+		{
+			public int Child1Int { get; set; } = 1;
+		}
+		public class Child2Message : RootMessage
+		{
+			public int Child2Int { get; set; } = 2;
+		}
 		public class TestEvent : BaseMessage
 		{
 			public int Alma { get; set; } = 1;
@@ -85,6 +97,20 @@ namespace Detekonai.Core.Tests
 
 			Assert.That(call, Is.EqualTo(4));
 		}
+
+		[Test]
+		public void CallingSubscribeChildrenWorks()
+		{
+			var bus = new MessageBus();
+
+			int call = 0;
+			bus.SubscribeChildren<RootMessage>(e => call++);
+			
+			bus.Trigger(new Child1Message());
+			bus.Trigger(new Child2Message());
+			Assert.That(call, Is.EqualTo(2));
+		}
+
 
 		[Test]
 		public void CallingSubscriptionWithBothGenericAndNonGenericFormParamResolutionWorks()
@@ -331,6 +357,9 @@ namespace Detekonai.Core.Tests
 			);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 			TestEvent ret = await bus.GetMessageAsync<TestEvent>();
+			await Task.Delay(1000);//normally we are all on the same thread but here is different so we wait to make sure the other thread had time to finish the await
+			//Console.WriteLine("a "+a);
+			//Console.WriteLine("b "+b);
 			Assert.That(ret, Is.Not.Null);
 			Assert.That(ret.Alma, Is.EqualTo(12));
 			Assert.That(anotherEvent, Is.Not.Null);
