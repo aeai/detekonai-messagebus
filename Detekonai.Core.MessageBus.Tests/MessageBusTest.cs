@@ -111,6 +111,18 @@ namespace Detekonai.Core.Tests
 			Assert.That(call, Is.EqualTo(2));
 		}
 
+		[Test]
+		public void CallingDynamicTriggerWorks()
+		{
+			var bus = new MessageBus();
+
+			int call = 0;
+			bus.Subscribe<Child1Message>(e => call++);
+			RootMessage msg = new Child1Message();
+			bus.TriggerDynamic(msg);
+			//bus.Trigger(new Child2Message());
+			Assert.That(call, Is.EqualTo(1));
+		}
 
 		[Test]
 		public void CallingSubscriptionWithBothGenericAndNonGenericFormParamResolutionWorks()
@@ -445,16 +457,16 @@ namespace Detekonai.Core.Tests
 
 			timer.Reset();
 
-			//Using DynamicInvoke is ~50x slower than using IhandlerToken
-			//timer.Start();
-			//for(int i = 0; i < 1000000; i++)
-			//{
-			//	bus.Trigger(typeof(TestEvent3), evt3);
-			//}
-			//timer.Stop();
-			//Debug.Log($"DynamicTrigger: {timer.ElapsedMilliseconds} ms");
+            //Using DynamicInvoke is ~50x slower than using IhandlerToken
+            timer.Start();
+            for (int i = 0; i < 1000000; i++)
+            {
+                bus.TriggerDynamic(evt3);
+            }
+            timer.Stop();
+			Console.WriteLine($"DynamicTrigger: {timer.ElapsedMilliseconds} ms");
 
-			timer.Reset();
+            timer.Reset();
 
 			timer.Start();
 			for(int i = 0; i < 1000000; i++)

@@ -12,7 +12,7 @@ namespace Detekonai.Core
     {
 
         private readonly Delegate[] delegates;
-        private readonly Dictionary<int, object> messagesUnderWait = new Dictionary<int, object>();
+        private readonly Dictionary<int, TaskCompletionSource<BaseMessage>> messagesUnderWait = new Dictionary<int, TaskCompletionSource<BaseMessage>>();
         private bool hasWaitingMessages = false;
         public MessageBus()
         {
@@ -26,14 +26,9 @@ namespace Detekonai.Core
         {
             if (BaseMessage.Keys.TryGetValue(typeof(T), out int key))
             {
-                TaskCompletionSource<T> tcs = null;
-                if(messagesUnderWait.TryGetValue(key, out object ob))
+                if(!messagesUnderWait.TryGetValue(key, out TaskCompletionSource<BaseMessage> tcs))
                 {
-                    tcs = (TaskCompletionSource<T>)ob;
-                }
-                else
-                {
-                    tcs = new TaskCompletionSource<T>();
+                    tcs = new TaskCompletionSource<BaseMessage>();
                     messagesUnderWait[key] = tcs;
                     hasWaitingMessages = true;
                 }
@@ -49,7 +44,8 @@ namespace Detekonai.Core
                         }
                     , true);
                 }
-                return await tcs.Task.ConfigureAwait(false);
+                var res = await tcs.Task.ConfigureAwait(false);
+                return (T)res;
             }
             else
             {
@@ -153,9 +149,21 @@ namespace Detekonai.Core
         {
             var originalHandler = delegates[evt.Id] as Action<T>;
             originalHandler?.Invoke(evt);
-            if (hasWaitingMessages && messagesUnderWait.TryGetValue(evt.Id, out object val))
+            if (hasWaitingMessages && messagesUnderWait.TryGetValue(evt.Id, out TaskCompletionSource<BaseMessage> val))
             {
-                ((TaskCompletionSource<T>)val).TrySetResult(evt);
+                val.TrySetResult(evt);
+                messagesUnderWait.Remove(evt.Id);
+                hasWaitingMessages = messagesUnderWait.Count > 0;
+            }
+        }
+
+        public void TriggerDynamic(BaseMessage evt)
+        {
+            Delegate originalHandler = delegates[evt.Id];
+            originalHandler?.DynamicInvoke(evt);
+            if (hasWaitingMessages && messagesUnderWait.TryGetValue(evt.Id, out TaskCompletionSource<BaseMessage> val))
+            { 
+                val.TrySetResult(evt);
                 messagesUnderWait.Remove(evt.Id);
                 hasWaitingMessages = messagesUnderWait.Count > 0;
             }
